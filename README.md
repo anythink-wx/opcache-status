@@ -12,7 +12,8 @@ files.
 
 
 这是一个fork版本,经过了翻译和加入了重置链接
-[![Screenshot](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)](https://raw.githubusercontent.com/jamesrwhite/opcache-status/improve-readme/screenshot.png)
+
+[![Screenshot](https://raw.githubusercontent.com/anythink-wx/opcache-status/master/screenshot2.png)](https://raw.githubusercontent.com/anythink-wx/opcache-status/master/screenshot2.png)
 
 ### TODO
 
