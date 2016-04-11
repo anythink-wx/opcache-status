@@ -3,7 +3,7 @@
 define('THOUSAND_SEPARATOR',true);
 
 if (!extension_loaded('Zend OPcache')) {
-    echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPcache extension loaded, sample data is being shown instead.</div>';
+    echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">该服务器未加载Opcache扩展,下面显示的为示例数据.</div>';
     require 'data-sample.php';
 }
 
@@ -17,11 +17,71 @@ class OpCacheDataModel
     {
         $this->_configuration = opcache_get_configuration();
         $this->_status = opcache_get_status();
+        if(isset($_GET['opcache_reset'])){
+            echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">操作码缓存已重置 <span><a href="javascript:void(0)" onclick="$(this).parent().parent().hide();">&#10006;</a></span></div>';
+        }
     }
 
     public function getPageTitle()
     {
-        return 'PHP ' . phpversion() . " with OpCache {$this->_configuration['version']['version']}";
+        return 'PHP ' . phpversion() . " / OpCache {$this->_configuration['version']['version']}";
+    }
+
+    public function translate($k){
+        $t['used_memory'] = '已用内存';
+        $t['free_memory'] = '可用内存';
+        $t['wasted_memory'] = '浪费内存';
+        $t['opcache_hit_rate'] = '命中率';
+        $t['blacklist_miss_ratio'] = '白名单未命中率';
+        $t['start_time'] = '启动时间';
+        $t['last_restart_time'] = '上次启动时间';
+        $t['num_cached_scripts'] = '缓存脚本';
+        $t['num_cached_keys'] = '缓存键';
+        $t['max_cached_keys'] = '最大缓存键';
+        $t['hits'] = '命中';
+        $t['misses'] = '未命中';
+        $t['blacklist_misses'] = '白名单未命中';
+        $t['oom_restarts'] = '因内存溢出重启';
+        $t['manual_restarts'] = '手动重启';
+        $t['hash_restarts'] = '因hash重启';
+        $t['current_wasted_percentage'] = '当前浪费率';
+        $t['opcache_enabled'] = '启用操作码缓存';
+
+        $t['opcache.enable'] = '启用操作码缓存';
+        $t['opcache.enable_cli'] = '仅针对 CLI 版本的 PHP 启用操作码缓存';
+        $t['opcache.memory_consumption'] = 'OPcache 的共享内存大小，以兆字节为单位';
+        $t['opcache.interned_strings_buffer'] = '用来存储临时字符串的内存大小，以兆字节为单位';
+        $t['opcache.max_accelerated_files'] = 'OPcache 哈希表中可存储的脚本文件数量上限。设置值取值范围最小值是 200，最大值在 PHP 5.5.6 之前是 100000，PHP 5.5.6 及之后是 1000000 ';
+        $t['opcache.max_wasted_percentage'] = '浪费内存的上限，以百分比计。 如果达到此上限，那么 OPcache 将产生重新启动续发事件';
+        $t['opcache.use_cwd'] = '如果启用，OPcache 将在哈希表的脚本键之后附加改脚本的工作目录， 以避免同名脚本冲突的问题。 禁用此选项可以提高性能，但是可能会导致应用崩溃。';
+        $t['opcache.validate_timestamps'] = '如果启用，那么 OPcache 会每隔 opcache.revalidate_freq 设定的秒数 检查脚本是否更新。 如果禁用此选项，你必须使用 opcache_reset() 或者 opcache_invalidate() 函数来手动重置 OPcache，也可以 通过重启 Web 服务器来使文件系统更改生效。';
+        $t['opcache.revalidate_freq'] = '检查脚本时间戳是否有更新的周期，以秒为单位。 设置为 0 会导致针对每个请求， OPcache 都会检查脚本更新';
+        $t['opcache.revalidate_path'] = '如果禁用此选项，在同一个 include_path 已存在的缓存文件会被重用。 因此，将无法找到不在包含路径下的同名文件。';
+        $t['opcache.save_comments'] = '如果禁用，脚本文件中的注释内容将不会被包含到操作码缓存文件， 这样可以有效减小优化后的文件体积。 禁用此配置指令可能会导致一些依赖注释或注解的 应用或框架无法正常工作， 比如： Doctrine， Zend Framework 2 以及 PHPUnit。';
+        $t['opcache.load_comments'] = '如果禁用，则即使文件中包含注释，也不会加载这些注释内容。 本选项可以和 opcache.save_comments 一起使用，以实现按需加载注释内容。';
+        $t['opcache.fast_shutdown'] = '如果启用，则会使用快速停止续发事件。 所谓快速停止续发事件是指依赖 Zend 引擎的内存管理模块 一次释放全部请求变量的内存，而不是依次释放每一个已分配的内存块。';
+        $t['opcache.enable_file_override'] = '如果启用，则在调用函数 file_exists()， is_file() 以及 is_readable() 的时候， 都会检查操作码缓存，无论文件是否已经被缓存。 如果应用中包含检查 PHP 脚本存在性和可读性的功能，这样可以提升性能。 但是如果禁用了 opcache.validate_timestamps 选项， 可能存在返回过时数据的风险。';
+        $t['opcache.optimization_level'] = '控制优化级别的二进制位掩码。';
+        $t['opcache.inherited_hack'] = '在 PHP 5.3 之前的版本，OPcache 会存储代码中使用 DECLARE_CLASS 操作码 来实现继承的位置。当文件被加载之后，OPcache 会尝试使用当前环境来绑定被继承的类。 由于当前脚本中可能并不需要 DECLARE_CLASS 操作码，如果这样的脚本需要对应的操作码被定义时， 可能无法运行。';
+        $t['opcache.dups_fix'] = '仅作为针对 “不可重定义类”错误的一种解决方案。';
+        $t['opcache.blacklist_filename'] = 'OPcache 黑名单文件位置。 黑名单文件为文本文件，包含了不进行预编译优化的文件名，每行一个文件名。 黑名单中的文件名可以使用通配符，也可以使用前缀。 此文件中以分号（;）开头的行将被视为注释。';
+        $t['opcache.max_file_size'] = '以字节为单位的缓存的文件大小上限。设置为 0 表示缓存全部文件。';
+        $t['opcache.consistency_checks'] = '如果是非 0 值，OPcache 将会每隔 N 次请求检查缓存校验和。 N 即为此配置指令的设置值。 由于此选项对于性能有较大影响，请尽在调试环境使用。';
+        $t['opcache.force_restart_timeout'] = '如果缓存处于非激活状态，等待多少秒之后计划重启。 如果超出了设定时间，则 OPcache 模块将杀除持有缓存锁的进程， 并进行重启。';
+        $t['opcache.log_verbosity_level'] = 'OPcache 模块的日志级别。 默认情况下，仅有致命级别（0）及错误级别（1）的日志会被记录。 其他可用的级别有：警告（2），信息（3）和调试（4）。';
+        $t['opcache.preferred_memory_model'] = 'OPcache 首选的内存模块。 如果留空，OPcache 会选择适用的模块， 通常情况下，自动选择就可以满足需求。';
+        $t['opcache.error_log'] = 'OPcache 模块的错误日志文件。 如果留空，则视为 stderr， 错误日志将被送往标准错误输出 （通常情况下是 Web 服务器的错误日志文件）。';
+        $t['opcache.protect_memory'] = '保护共享内存，以避免执行脚本时发生非预期的写入。 仅用于内部调试。';
+        $t['opcache.lockfile_path'] = '';
+        $t['opcache.file_cache'] = '';
+        $t['opcache.file_cache_only'] = '';
+        $t['opcache.file_cache_consistency_checks'] = '';
+        if(isset($t[$k])){
+            return $k.' - '.$t[$k];
+        }else{
+            return $k;
+        }
+
     }
 
     public function getStatusDataRows()
@@ -38,7 +98,7 @@ class OpCacheDataModel
                         $value = 'false';
                     }
                     if ($v === true) {
-                        $value = 'true';
+                        $value = '是';
                     }
                     if ($k === 'used_memory' || $k === 'free_memory' || $k === 'wasted_memory') {
                         $v = $this->_size_for_humans(
@@ -61,17 +121,17 @@ class OpCacheDataModel
                         $v = number_format($v);
                     }
 
-                    $rows[] = "<tr><th>$k</th><td>$v</td></tr>\n";
+                    $rows[] = "<tr><th>".$this->translate($k)."</th><td>$v</td></tr>\n";
                 }
                 continue;
             }
             if ($value === false) {
-                $value = 'false';
+                $value = '否';
             }
             if ($value === true) {
-                $value = 'true';
+                $value = '是';
             }
-            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
+            $rows[] = "<tr><th>".$this->translate($key)."</th><td>$value</td></tr>\n";
         }
 
         return implode("\n", $rows);
@@ -82,15 +142,15 @@ class OpCacheDataModel
         $rows = array();
         foreach ($this->_configuration['directives'] as $key => $value) {
             if ($value === false) {
-                $value = 'false';
+                $value = '否';
             }
             if ($value === true) {
-                $value = 'true';
+                $value = '是';
             }
             if ($key == 'opcache.memory_consumption') {
                 $value = $this->_size_for_humans($value);
             }
-            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
+            $rows[] = "<tr><th>".$this->translate($key)."</th><td>$value</td></tr>\n";
         }
 
         return implode("\n", $rows);
@@ -352,7 +412,7 @@ $dataModel = new OpCacheDataModel();
             left: 0;
             background: white;
             border: 1px solid #ccc;
-            height: 450px;
+            height: 640px;
             width: 100%;
             overflow: auto;
         }
@@ -458,8 +518,8 @@ $dataModel = new OpCacheDataModel();
             cursor: pointer;
         }
     </style>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/d3/3.5.16/d3.min.js"></script>
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
     <script>
         var hidden = {};
         function toggleVisible(head, row) {
@@ -485,7 +545,7 @@ $dataModel = new OpCacheDataModel();
 
             <div class="tab">
                 <input type="radio" id="tab-status" name="tab-group-1" checked>
-                <label for="tab-status">Status</label>
+                <label for="tab-status">状态</label>
                 <div class="content">
                     <table>
                         <?php echo $dataModel->getStatusDataRows(); ?>
@@ -495,7 +555,7 @@ $dataModel = new OpCacheDataModel();
 
             <div class="tab">
                 <input type="radio" id="tab-config" name="tab-group-1">
-                <label for="tab-config">Configuration</label>
+                <label for="tab-config">配置信息</label>
                 <div class="content">
                     <table>
                         <?php echo $dataModel->getConfigDataRows(); ?>
@@ -505,13 +565,13 @@ $dataModel = new OpCacheDataModel();
 
             <div class="tab">
                 <input type="radio" id="tab-scripts" name="tab-group-1">
-                <label for="tab-scripts">Scripts (<?php echo $dataModel->getScriptStatusCount(); ?>)</label>
+                <label for="tab-scripts">脚本 (<?php echo $dataModel->getScriptStatusCount(); ?>)</label>
                 <div class="content">
                     <table style="font-size:0.8em;">
                         <tr>
-                            <th width="10%">Hits</th>
-                            <th width="20%">Memory</th>
-                            <th width="70%">Path</th>
+                            <th width="10%"></th>
+                            <th width="20%">内存</th>
+                            <th width="70%">路径</th>
                         </tr>
                         <?php echo $dataModel->getScriptStatusRows(); ?>
                     </table>
@@ -520,7 +580,7 @@ $dataModel = new OpCacheDataModel();
 
             <div class="tab">
                 <input type="radio" id="tab-visualise" name="tab-group-1">
-                <label for="tab-visualise">Visualise Partition</label>
+                <label for="tab-visualise">可视化分区</label>
                 <div class="content"></div>
             </div>
 
@@ -528,17 +588,18 @@ $dataModel = new OpCacheDataModel();
 
         <div id="graph">
             <form>
-                <label><input type="radio" name="dataset" value="memory" checked> Memory</label>
-                <label><input type="radio" name="dataset" value="keys"> Keys</label>
-                <label><input type="radio" name="dataset" value="hits"> Hits</label>
-                <label><input type="radio" name="dataset" value="restarts"> Restarts</label>
+                <label><input type="radio" name="dataset" value="memory" checked> 内存</label>
+                <label><input type="radio" name="dataset" value="keys"> 哈希</label>
+                <label><input type="radio" name="dataset" value="hits"> 命中</label>
+                <label><input type="radio" name="dataset" value="restarts"> 重新启动</label>
+                <label><a href="?opcache_reset=true" onclick="return confirm('确定要重置操作码缓存?')">重置</a> </label>
             </form>
 
             <div id="stats"></div>
         </div>
     </div>
 
-    <div id="close-partition">&#10006; Close Visualisation</div>
+    <div id="close-partition">&#10006; 关闭可视化</div>
     <div id="partition"></div>
 
     <script>
@@ -576,26 +637,26 @@ $dataModel = new OpCacheDataModel();
         function set_text(t) {
             if (t === "memory") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Used</th><td><?php echo $dataModel->getHumanUsedMemory()?></td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free</th><td><?php echo $dataModel->getHumanFreeMemory()?></td></tr>"+
-                    "<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo $dataModel->getHumanWastedMemory()?></td></tr>"+
+                    "<table><tr><th style='background:#B41F1F;'>已用</th><td><?php echo $dataModel->getHumanUsedMemory()?></td></tr>"+
+                    "<tr><th style='background:#1FB437;'>空闲</th><td><?php echo $dataModel->getHumanFreeMemory()?></td></tr>"+
+                    "<tr><th style='background:#ff7f0e;' rowspan=\"2\">浪费</th><td><?php echo $dataModel->getHumanWastedMemory()?></td></tr>"+
                     "<tr><td><?php echo $dataModel->getWastedMemoryPercentage()?>%</td></tr></table>"
                 );
             } else if (t === "keys") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Cached keys</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free Keys</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>缓存哈希数量</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
+                    "<tr><th style='background:#1FB437;'>可用哈希数量</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
                 );
             } else if (t === "hits") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>未命中</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
+                    "<tr><th style='background:#1FB437;'>命中</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
                 );
             } else if (t === "restarts") {
                 d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Memory</th><td>"+dataset[t][0]+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Manual</th><td>"+dataset[t][1]+"</td></tr>"+
-                    "<tr><th style='background:#ff7f0e;'>Keys</th><td>"+dataset[t][2]+"</td></tr></table>"
+                    "<table><tr><th style='background:#B41F1F;'>因为内存</th><td>"+dataset[t][0]+"</td></tr>"+
+                    "<tr><th style='background:#1FB437;'>因为手动</th><td>"+dataset[t][1]+"</td></tr>"+
+                    "<tr><th style='background:#ff7f0e;'>因为哈希</th><td>"+dataset[t][2]+"</td></tr></table>"
                 );
             }
         }
