@@ -18,7 +18,11 @@ class OpCacheDataModel
         $this->_configuration = opcache_get_configuration();
         $this->_status = opcache_get_status();
         if(isset($_GET['opcache_reset'])){
-            echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">操作码缓存已重置 <span><a href="javascript:void(0)" onclick="$(this).parent().parent().hide();">&#10006;</a></span></div>';
+            if(opcache_reset()){
+                echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">操作码缓存已重置 <span><a href="javascript:void(0)" onclick="$(this).parent().parent().hide();">&#10006;</a></span></div>';
+            }else{
+                echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">操作码缓存重置失败<span><a href="javascript:void(0)" onclick="$(this).parent().parent().hide();">&#10006;</a></span></div>';
+            }
         }
     }
 
